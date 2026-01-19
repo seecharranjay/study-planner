@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Planner</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --border: rgba(148, 163, 184, 0.2);
+      --accent: #38bdf8;
+      --danger: #fb7185;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(56, 189, 248, 0.25), transparent 50%),
+                  radial-gradient(1000px 600px at 80% 20%, rgba(251, 113, 133, 0.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .stats {
+      text-align: right;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr 0.6fr auto;
+      gap: 10px;
+      margin: 14px 0 10px;
+    }
+
+    input, select, button {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text);
+      padding: 12px 12px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input::placeholder { color: rgba(148,163,184,0.7); }
+
+    button {
+      cursor: pointer;
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.35);
+      transition: transform 0.05s ease, background 0.15s ease;
+      font-weight: 600;
+    }
+    button:active { transform: translateY(1px); }
+    button:hover { background: rgba(56, 189, 248, 0.22); }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .danger {
+      background: rgba(251, 113, 133, 0.12);
+      border-color: rgba(251, 113, 133, 0.35);
+    }
+    .danger:hover { background: rgba(251, 113, 133, 0.18); }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .meta {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .submeta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(148, 163, 184, 0.06);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      padding: 10px 10px;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.08);
+      border-color: rgba(148, 163, 184, 0.22);
+      font-weight: 700;
+    }
+    .icon-btn:hover { background: rgba(148, 163, 184, 0.12); }
+
+    .completed .title {
+      text-decoration: line-through;
+      opacity: 0.75;
+    }
+
+    .empty {
+      color: var(--muted);
+      border: 1px dashed rgba(148, 163, 184, 0.25);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      .stats { text-align: left; }
+      header { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>Study Planner</h1>
+        <p class="subtitle">Add tasks, set a due date and priority, and check them off. Saves automatically.</p>
+      </div>
+      <div class="stats" id="stats">0 tasks</div>
+    </header>
+
+    <section class="row">
+      <input id="taskInput" type="text" placeholder="e.g., Finish Algorithms problem set" />
+      <input id="dateInput" type="date" />
+      <select id="priorityInput">
+        <option value="Low">Low</option>
+        <option value="Medium" selected>Medium</option>
+        <option value="High">High</option>
+      </select>
+      <button id="addBtn">Add</button>
+    </section>
+
+    <section class="controls">
+      <div class="filters">
+        <select id="statusFilter">
+          <option value="all" selected>All</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
+        </select>
+
+        <select id="sortBy">
+          <option value="created" selected>Sort: Created</option>
+          <option value="due">Sort: Due Date</option>
+          <option value="priority">Sort: Priority</option>
+        </select>
+      </div>
+
+      <button class="danger" id="clearCompletedBtn">Clear Completed</button>
+    </section>
+
+    <ul id="list"></ul>
+    <div class="empty" id="emptyState" style="display:none;">No tasks yet — add your first one above.</div>
+  </main>
+
+  <script>
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    const PRIORITY_RANK = { High: 3, Medium: 2, Low: 1 };
+
+    function formatDue(dateStr) {
+      if (!dateStr) return "No due date";
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function uid() {
+      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+    }
+
+    // ---------- Storage ----------
+    const STORAGE_KEY = "study_planner_tasks_v1";
+
+    function loadTasks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    // ---------- App State ----------
+    let tasks = loadTasks();
+
+    // ---------- Render ----------
+    function applyFiltersAndSort(tasks) {
+      const status = $("statusFilter").value;
+      const sortBy = $("sortBy").value;
+
+      let out = [...tasks];
+
+      // Filter
+      if (status === "active") out = out.filter(t => !t.completed);
+      if (status === "completed") out = out.filter(t => t.completed);
+
+      // Sort
+      if (sortBy === "created") {
+        out.sort((a, b) => b.createdAt - a.createdAt);
+      } else if (sortBy === "due") {
+        out.sort((a, b) => (a.dueDate || "9999-12-31").localeCompare(b.dueDate || "9999-12-31"));
+      } else if (sortBy === "priority") {
+        out.sort((a, b) => PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority]);
+      }
+
+      return out;
+    }
+
+    function updateStats() {
+      const total = tasks.length;
+      const done = tasks.filter(t => t.completed).length;
+      const active = total - done;
+      $("stats").textContent = `${total} task${total === 1 ? "" : "s"} • ${active} active • ${done} done`;
+    }
+
+    function render() {
+      const list = $("list");
+      list.innerHTML = "";
+
+      const visible = applyFiltersAndSort(tasks);
+
+      $("emptyState").style.display = (visible.length === 0) ? "block" : "none";
+
+      for (const t of visible) {
+        const li = document.createElement("li");
+        li.className = "item" + (t.completed ? " completed" : "");
+        li.dataset.id = t.id;
+
+        li.innerHTML = `
+          <div class="left">
+            <input class="checkbox" type="checkbox" ${t.completed ? "checked" : ""} aria-label="Mark complete" />
+            <div class="meta">
+              <p class="title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</p>
+              <div class="submeta">
+                <span class="tag">Priority: ${t.priority}</span>
+                <span class="tag">Due: ${formatDue(t.dueDate)}</span>
+              </div>
+            </div>
+          </div>
+          <div></div>
+          <div class="actions">
+            <button class="icon-btn" data-action="edit" title="Edit">✎</button>
+            <button class="icon-btn" data-action="delete" title="Delete">🗑</button>
+          </div>
+        `;
+
+        // Checkbox toggle
+        li.querySelector(".checkbox").addEventListener("change", () => toggleComplete(t.id));
+
+        // Action buttons
+        li.querySelector('[data-action="delete"]').addEventListener("click", () => deleteTask(t.id));
+        li.querySelector('[data-action="edit"]').addEventListener("click", () => editTask(t.id));
+
+        list.appendChild(li);
+      }
+
+      updateStats();
+      saveTasks(tasks);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ---------- Actions ----------
+    function addTask() {
+      const title = $("taskInput").value.trim();
+      const dueDate = $("dateInput").value;
+      const priority = $("priorityInput").value;
+
+      if (!title) return;
+
+      tasks.unshift({
+        id: uid(),
+        title,
+        dueDate: dueDate || "",
+        priority,
+        completed: false,
+        createdAt: Date.now()
+      });
+
+      $("taskInput").value = "";
+      $("dateInput").value = "";
+      $("priorityInput").value = "Medium";
+
+      render();
+    }
+
+    function toggleComplete(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+    }
+
+    function editTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      const newTitle = prompt("Edit task title:", task.title);
+      if (newTitle === null) return; // user cancelled
+      const titleTrim = newTitle.trim();
+      if (!titleTrim) return;
+
+      const newDue = prompt("Edit due date (YYYY-MM-DD) or leave blank:", task.dueDate || "");
+      if (newDue === null) return;
+
+      const newPriority = prompt("Edit priority (Low, Medium, High):", task.priority);
+      if (newPriority === null) return;
+
+      const normalizedPriority =
+        ["Low", "Medium", "High"].includes(newPriority.trim()) ? newPriority.trim() : task.priority;
+
+      tasks = tasks.map(t =>
+        t.id === id
+          ? { ...t, title: titleTrim, dueDate: (newDue || "").trim(), priority: normalizedPriority }
+          : t
+      );
+
+      render();
+    }
+
+    function clearCompleted() {
+      tasks = tasks.filter(t => !t.completed);
+      render();
+    }
+
+    // ---------- Events ----------
+    $("addBtn").addEventListener("click", addTask);
+
+    $("taskInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addTask();
+    });
+
+    $("statusFilter").addEventListener("change", render);
+    $("sortBy").addEventListener("change", render);
+    $("clearCompletedBtn").addEventListener("click", clearCompleted);
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
